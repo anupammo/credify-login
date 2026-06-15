@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
 
 const products = ['CRM', 'Form Builder', 'Credentialing', 'Billing', 'Engagement'];
 
 export default function LoginPage() {
-  const router = useRouter();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isForgotOpen, setIsForgotOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Cooldown after failed login (seconds)
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sign in state
   const [signInEmail, setSignInEmail] = useState('');
@@ -49,6 +51,36 @@ export default function LoginPage() {
   const [cycleIndex, setCycleIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (cooldownSeconds <= 0) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+    timerRef.current = setInterval(() => {
+      setCooldownSeconds((prev) => {
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [cooldownSeconds]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setIsAnimating(true);
@@ -60,13 +92,19 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Check existing session
+  // Check existing session – redirect to external login page if already logged in
   useEffect(() => {
+    let isMounted = true;
     fetch('/api/auth/me')
       .then(res => res.json())
-      .then(data => { if (data.user) router.push('/dashboard'); })
+      .then(data => {
+        if (isMounted && data.user) {
+          window.location.href = 'https://forms.credifyfast.com';
+        }
+      })
       .catch(() => {});
-  }, [router]);
+    return () => { isMounted = false; };
+  }, []);
 
   // Live password validation
   useEffect(() => {
@@ -89,8 +127,16 @@ export default function LoginPage() {
 
   const clearMessages = () => { setError(''); setSuccess(''); };
 
+  const startCooldown = () => {
+    setCooldownSeconds(30);
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (cooldownSeconds > 0) {
+      setError(`Please wait ${cooldownSeconds} seconds before trying again.`);
+      return;
+    }
     clearMessages();
     setIsLoading(true);
     try {
@@ -101,9 +147,11 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      router.push('/dashboard');
+      // Redirect to external login page after successful sign-in
+      window.location.href = 'https://forms.credifyfast.com';
     } catch (err: any) {
       setError(err.message);
+      startCooldown();  // Start 30-second cooldown on failure
     } finally {
       setIsLoading(false);
     }
@@ -207,10 +255,11 @@ export default function LoginPage() {
     </div>
   );
 
+  const isSignInDisabled = isLoading || cooldownSeconds > 0;
+
   return (
     <>
       <div className="shell">
-        {/* Brand Panel */}
         <aside className="brand">
           <div className="brand-top">
             <div className="logo-lockup">
@@ -242,7 +291,6 @@ export default function LoginPage() {
           </div>
         </aside>
 
-        {/* Form Panel */}
         <main className="panel">
           <div className="card">
             <div className="mobile-brand"><span className="mark">C</span> Credify</div>
@@ -265,24 +313,43 @@ export default function LoginPage() {
                 <form onSubmit={handleSignIn}>
                   <div className="field">
                     <label>Work email<span className="req-star">*</span></label>
-                    <input type="email" value={signInEmail} onChange={(e) => setSignInEmail(e.target.value)} required />
+                    <input
+                      type="email"
+                      value={signInEmail}
+                      onChange={(e) => setSignInEmail(e.target.value)}
+                      disabled={cooldownSeconds > 0}
+                      required
+                    />
                   </div>
                   <div className="field has-toggle">
                     <label>Password<span className="req-star">*</span></label>
                     <div className="input-wrap">
-                      <input type={showSignInPassword ? 'text' : 'password'} value={signInPassword} onChange={(e) => setSignInPassword(e.target.value)} required />
+                      <input
+                        type={showSignInPassword ? 'text' : 'password'}
+                        value={signInPassword}
+                        onChange={(e) => setSignInPassword(e.target.value)}
+                        disabled={cooldownSeconds > 0}
+                        required
+                      />
                       <button type="button" className="toggle-pw" onClick={() => setShowSignInPassword(!showSignInPassword)}>👁️</button>
                     </div>
                   </div>
                   <div className="row">
                     <label className="check">
-                      <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+                      <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} disabled={cooldownSeconds > 0} />
                       <span className="box">✓</span>
                       Keep me signed in
                     </label>
                     <button type="button" className="link" onClick={() => setIsForgotOpen(true)}>Forgot password?</button>
                   </div>
-                  <button type="submit" className="btn-primary" disabled={isLoading}>{isLoading ? 'Working...' : 'Sign in'}</button>
+                  <button type="submit" className="btn-primary" disabled={isSignInDisabled}>
+                    {cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s` : (isLoading ? 'Working...' : 'Sign in')}
+                  </button>
+                  {cooldownSeconds > 0 && (
+                    <p className="field-hint" style={{ textAlign: 'center', marginTop: '12px', color: 'var(--problem)' }}>
+                      Too many attempts. Please wait {cooldownSeconds} seconds.
+                    </p>
+                  )}
                 </form>
               </section>
             )}
