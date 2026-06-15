@@ -1,8 +1,7 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  serverExternalPackages: ['@prisma/client', 'pg'], // Required for Prisma 7 + Turbopack
+  serverExternalPackages: ['@prisma/client', 'pg'],
 };
 
 export default nextConfig;
