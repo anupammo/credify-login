@@ -92,14 +92,14 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Check existing session – redirect to external login page if already logged in
+  // Check existing session – send already-authenticated users to their dashboard
   useEffect(() => {
     let isMounted = true;
     fetch('/api/auth/me')
       .then(res => res.json())
       .then(data => {
         if (isMounted && data.user) {
-          window.location.href = 'https://forms.credifyfast.com';
+          window.location.href = '/dashboard';
         }
       })
       .catch(() => {});
@@ -147,8 +147,8 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      // Redirect to external login page after successful sign-in
-      window.location.href = 'https://forms.credifyfast.com';
+      // Send the user into their workspace after successful sign-in
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message);
       startCooldown();  // Start 30-second cooldown on failure
