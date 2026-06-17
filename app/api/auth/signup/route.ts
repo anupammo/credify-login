@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { hashPassword, normalizePhone, validatePassword, isValidEmail } from '@/lib/auth';
+import { hashPassword, normalizePhone, validatePassword, isValidEmail, generateToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,10 +58,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    // Log the new user in immediately by issuing the same session cookie as login.
+    const token = generateToken(user.id, user.email);
+    const response = NextResponse.json({
       success: true,
       user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
     });
+    response.cookies.set('credify_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60,
+      path: '/',
+    });
+    return response;
   } catch (error) {
     console.error('Signup error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

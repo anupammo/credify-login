@@ -187,13 +187,8 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setMode('signin');
-      setSignInEmail(signUpEmail);
-      setSignInPassword('');
-      setSuccess('Account created — sign in to continue.');
-      // Reset signup form
-      setFirstName(''); setLastName(''); setSignUpEmail(''); setPassword(''); setConfirmPassword('');
-      setCompany(''); setPhone(''); setHearAbout(''); setHearOther(''); setTermsAccepted(false); setShowRules(false);
+      // Account created and logged in — go straight to the workspace
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message);
     } finally {
