@@ -256,7 +256,7 @@ export default function LoginPage() {
   // which made the email input lose focus after each character.
   const forgotModal = (
     <div className={`overlay ${isForgotOpen ? 'open' : ''}`} onClick={(e) => e.target === e.currentTarget && setIsForgotOpen(false)}>
-      <div className="modal">
+      <div className={`modal ${forgotSent ? 'done' : ''}`}>
         <button className="modal-close" onClick={() => setIsForgotOpen(false)}>✕</button>
         {!forgotSent ? (
           <div className="ask">
@@ -277,7 +277,7 @@ export default function LoginPage() {
           <div className="sent">
             <div className="sent-badge">✓</div>
             <h2>Check your inbox</h2>
-            <p>If an account exists for <strong>{forgotEmail}</strong>, a reset link is on its way. It expires in 30 minutes.</p>
+            <p>If an account exists for <strong>{forgotEmail}</strong>, a reset link is on its way — it expires in 30 minutes. Don&apos;t see it? Check your spam folder.</p>
             <button className="btn-primary" onClick={() => setIsForgotOpen(false)}>Back to sign in</button>
           </div>
         )}
