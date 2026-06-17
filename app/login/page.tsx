@@ -251,7 +251,10 @@ export default function LoginPage() {
     window.location.href = `/api/auth/oauth/${provider.toLowerCase()}`;
   };
 
-  const ForgotModal = () => (
+  // NOTE: rendered inline as {forgotModal} (a plain element), NOT as <ForgotModal/>.
+  // Defining it as a nested component caused React to remount it on every keystroke,
+  // which made the email input lose focus after each character.
+  const forgotModal = (
     <div className={`overlay ${isForgotOpen ? 'open' : ''}`} onClick={(e) => e.target === e.currentTarget && setIsForgotOpen(false)}>
       <div className="modal">
         <button className="modal-close" onClick={() => setIsForgotOpen(false)}>✕</button>
@@ -260,6 +263,7 @@ export default function LoginPage() {
             <div className="ico">🔐</div>
             <h2>Reset your password</h2>
             <p>Enter the email tied to your Credify account and we'll send a reset link.</p>
+            {error && <div className="err show">{error}</div>}
             <form onSubmit={handleForgot}>
               <div className="field">
                 <label htmlFor="fp-email">Work email<span className="req-star">*</span></label>
@@ -273,7 +277,7 @@ export default function LoginPage() {
           <div className="sent">
             <div className="sent-badge">✓</div>
             <h2>Check your inbox</h2>
-            <p>If an account exists for that address, a reset link is on its way.</p>
+            <p>If an account exists for <strong>{forgotEmail}</strong>, a reset link is on its way. It expires in 30 minutes.</p>
             <button className="btn-primary" onClick={() => setIsForgotOpen(false)}>Back to sign in</button>
           </div>
         )}
@@ -366,7 +370,7 @@ export default function LoginPage() {
                       <span className="box">✓</span>
                       Keep me signed in
                     </label>
-                    <button type="button" className="link" onClick={() => setIsForgotOpen(true)}>Forgot password?</button>
+                    <button type="button" className="link" onClick={() => { clearMessages(); setForgotSent(false); setForgotEmail(''); setIsForgotOpen(true); }}>Forgot password?</button>
                   </div>
                   <button type="submit" className="btn-primary" disabled={isSignInDisabled}>
                     {cooldownSeconds > 0 ? `Wait ${cooldownSeconds}s` : (isLoading ? 'Working...' : 'Sign in')}
@@ -448,7 +452,7 @@ export default function LoginPage() {
           </div>
         </main>
       </div>
-      <ForgotModal />
+      {forgotModal}
     </>
   );
 }
