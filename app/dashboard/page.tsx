@@ -110,12 +110,20 @@ export default function DashboardPage() {
   useEffect(() => {
     fetch('/api/auth/me')
       .then((res) => res.json())
-      .then((data) => {
-        if (data.user) setUser(data.user);
-        else router.replace('/login');
+      .then(async (data) => {
+        if (data.user) {
+          setUser(data.user);
+          setLoading(false);
+        } else {
+          // Token is missing/invalid or its user no longer exists. Clear the
+          // stale cookie so the proxy doesn't bounce us straight back here.
+          await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+          window.location.assign('/login');
+        }
       })
-      .catch(() => router.replace('/login'))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        window.location.assign('/login');
+      });
   }, [router]);
 
   const handleSignOut = async () => {
