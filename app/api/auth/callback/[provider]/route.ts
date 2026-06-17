@@ -11,7 +11,7 @@ import {
 
 const PROVIDER_LABELS: Record<string, string> = {
   google: 'Google',
-  microsoft: 'Microsoft',
+  'azure-ad': 'Microsoft',
 };
 
 // GET /api/auth/callback/google | /api/auth/callback/microsoft

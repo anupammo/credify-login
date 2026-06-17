@@ -2,7 +2,7 @@
 // On success the callback issues the same `credify_token` JWT cookie the rest
 // of the app uses, so SSO logins share one session system with email/password.
 
-export type OAuthProvider = 'google' | 'microsoft';
+export type OAuthProvider = 'google' | 'azure-ad';
 
 interface ProviderConfig {
   authUrl: string;
@@ -53,7 +53,7 @@ export function getProviderConfig(provider: string): ProviderConfig | null {
       scope: 'openid email profile',
     };
   }
-  if (provider === 'microsoft') {
+  if (provider === 'azure-ad') {
     const clientId = process.env.AZURE_AD_CLIENT_ID;
     const clientSecret = process.env.AZURE_AD_CLIENT_SECRET;
     if (!clientId || !clientSecret) return null;

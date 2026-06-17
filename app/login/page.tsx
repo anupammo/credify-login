@@ -337,7 +337,7 @@ export default function LoginPage() {
                 <h1>Welcome back</h1>
                 <div className="sso">
                   <button className="sso-btn" onClick={() => handleSSO('Google')}><GoogleIcon /> Continue with Google</button>
-                  <button className="sso-btn" onClick={() => handleSSO('Microsoft')}><MicrosoftIcon /> Continue with Microsoft</button>
+                  <button className="sso-btn" onClick={() => handleSSO('azure-ad')}><MicrosoftIcon /> Continue with Microsoft</button>
                 </div>
                 <div className="divider">or use email</div>
                 <form onSubmit={handleSignIn}>
@@ -390,7 +390,7 @@ export default function LoginPage() {
                 <h1>Get started</h1>
                 <div className="sso">
                   <button className="sso-btn" onClick={() => handleSSO('Google')}><GoogleIcon /> Sign up with Google</button>
-                  <button className="sso-btn" onClick={() => handleSSO('Microsoft')}><MicrosoftIcon /> Sign up with Microsoft</button>
+                  <button className="sso-btn" onClick={() => handleSSO('azure-ad')}><MicrosoftIcon /> Sign up with Microsoft</button>
                 </div>
                 <div className="divider">or use email</div>
                 <form onSubmit={handleSignUp}>
