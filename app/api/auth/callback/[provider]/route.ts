@@ -5,6 +5,7 @@ import {
   getProviderConfig,
   exchangeCodeForTokens,
   profileFromTokens,
+  appUrl,
   type OAuthProvider,
 } from '@/lib/oauth';
 
@@ -21,7 +22,7 @@ export async function GET(
   { params }: { params: Promise<{ provider: string }> }
 ) {
   const { provider } = await params;
-  const loginUrl = new URL('/login', req.url);
+  const loginUrl = appUrl('/login');
 
   const config = getProviderConfig(provider);
   const code = req.nextUrl.searchParams.get('code');
@@ -63,7 +64,7 @@ export async function GET(
     });
 
     const token = generateToken(user.id, user.email);
-    const response = NextResponse.redirect(new URL('/dashboard', req.url));
+    const response = NextResponse.redirect(appUrl('/dashboard'));
     response.cookies.set('credify_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

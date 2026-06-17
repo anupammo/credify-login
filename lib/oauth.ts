@@ -25,8 +25,15 @@ interface TokenResponse {
   [key: string]: unknown;
 }
 
-function baseUrl(): string {
+export function baseUrl(): string {
   return (process.env.NEXTAUTH_URL || 'http://localhost:3000').replace(/\/$/, '');
+}
+
+// Build an absolute app URL from the public origin (NEXTAUTH_URL), NOT from the
+// incoming request — behind Nginx, req.url resolves to localhost:3001 and would
+// redirect users off-site. Use this for every server-side redirect.
+export function appUrl(path: string): URL {
+  return new URL(path, baseUrl());
 }
 
 export function redirectUri(provider: OAuthProvider): string {
