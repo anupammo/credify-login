@@ -106,6 +106,18 @@ export default function LoginPage() {
     return () => { isMounted = false; };
   }, []);
 
+  // Surface OAuth callback errors passed back via ?error=
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get('error');
+    if (!code) return;
+    const messages: Record<string, string> = {
+      oauth_failed: 'Single sign-on failed. Please try again or use email and password.',
+      oauth_unavailable: 'That sign-in method is not configured.',
+      oauth_no_email: 'Your provider account did not share an email address.',
+    };
+    setError(messages[code] || 'Sign-in failed. Please try again.');
+  }, []);
+
   // Live password validation
   useEffect(() => {
     setPasswordRules({
@@ -217,7 +229,8 @@ export default function LoginPage() {
   };
 
   const handleSSO = (provider: string) => {
-    setError(`${provider} sign-in isn't available yet — please use email and password.`);
+    // Hand off to the OAuth flow; the callback issues the session and redirects to /dashboard.
+    window.location.href = `/api/auth/oauth/${provider.toLowerCase()}`;
   };
 
   const ForgotModal = () => (
