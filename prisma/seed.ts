@@ -14,13 +14,14 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const defaultPasswordHash = await bcrypt.hash('Test123!', 10);
+  const demoPasswordHash = await bcrypt.hash('Demo#1234?', 10);
 
   // Demo user
   await prisma.user.upsert({
-    where: { email: 'demo@credify.com' },
-    update: {},
+    where: { email: 'demo@credifyfast.com' },
+    update: { passwordHash: demoPasswordHash },
     create: {
-      email: 'demo@credify.com',
+      email: 'demo@credifyfast.com',
       firstName: 'Demo',
       lastName: 'User',
       company: 'Credify Demo',
@@ -28,7 +29,7 @@ async function main() {
       phoneDigits: '5551234567',
       source: 'search',
       sourceLabel: 'Google or web search',
-      passwordHash: defaultPasswordHash,
+      passwordHash: demoPasswordHash,
     },
   });
 
