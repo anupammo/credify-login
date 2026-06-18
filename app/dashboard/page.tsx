@@ -20,7 +20,7 @@ interface User {
    ============================================================ */
 const MODULES = [
   { id: 'crm',       name: 'CRM',          desc: 'Leads, contacts, and email cadences.',        href: '/crm',       icon: 'users' },
-  { id: 'forms',     name: 'Form Builder', desc: 'Intake forms and validated screeners.',       href: '/forms',     icon: 'clipboard' },
+  { id: 'forms',     name: 'Form Builder', desc: 'Intake forms and validated screeners.',       href: 'https://forms.credifyfast.com', icon: 'clipboard' },
   { id: 'reports',   name: 'Reports',      desc: 'Dashboards and analytics for your practice.', href: '/reports',   icon: 'chart' },
   { id: 'invoicing', name: 'Invoicing',    desc: 'Create and send credentialing invoices.',     href: '/invoicing', icon: 'invoice' },
 ] as const;
